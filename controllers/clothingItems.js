@@ -1,35 +1,33 @@
 const ClothingItem = require("../models/clothingItem");
+const {
+  CREATED,
+  internalErrorHandler,
+  responseHandler,
+  castErrorHandler,
+  BAD_REQUEST,
+  SUCCESS,
+} = require("../utils/errors");
 
 const createItem = (req, res) => {
+  console.log(req.user._id);
   const { name, weather, imageUrl } = req.body;
+  const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl })
-    .then((item) => res.status(201).send(item))
+  ClothingItem.create({ name, weather, imageUrl, owner })
+    .then((item) => res.status(SUCCESS).send(item))
     .catch((err) => {
-      console.error(err);
-      return res.status(500).send({ message: err.message });
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      internalErrorHandler(err, res);
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send(items))
+    .then((items) => res.status(SUCCESS).send(items))
     .catch((err) => {
-      console.error(err);
-      return res.status(500).send({ message: err.message });
-    });
-};
-
-const updateItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageUrl } = req.body;
-
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
-    .then((item) => res.status(200).send(item))
-    .catch((err) => {
-      console.error(err);
-      return res.status(500).send({ message: err.message });
+      internalErrorHandler(err, res);
     });
 };
 
@@ -39,11 +37,42 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(200).send({}))
+    .then((item) => responseHandler(res, item))
     .catch((err) => {
-      console.error(err);
-      return res.status(500).send({ message: err.message });
+      castErrorHandler(err, res);
     });
 };
 
-module.exports = { createItem, getItems, updateItem, deleteItem };
+const likeItem = (req, res) => {
+  const { itemId } = req.params;
+
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => {
+      responseHandler(res, item);
+    })
+    .catch((err) => {
+      castErrorHandler(err, res);
+    });
+};
+
+const dislikeItem = (req, res) => {
+  const { itemId } = req.params;
+
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then((item) => responseHandler(res, item))
+    .catch((err) => {
+      castErrorHandler(err, res);
+    });
+};
+
+module.exports = { createItem, getItems, likeItem, deleteItem, dislikeItem };
