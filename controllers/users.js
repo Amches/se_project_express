@@ -1,7 +1,6 @@
 const User = require("../models/user");
 const {
   BAD_REQUEST,
-  NOT_FOUND,
   CREATED,
   internalErrorHandler,
   SUCCESS,
@@ -25,7 +24,7 @@ const createUser = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
-      internalErrorHandler(err, res);
+      return internalErrorHandler(err, res);
     });
 };
 

@@ -1,6 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
 const {
-  CREATED,
   internalErrorHandler,
   responseHandler,
   castErrorHandler,
@@ -19,7 +18,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
-      internalErrorHandler(err, res);
+      return internalErrorHandler(err, res);
     });
 };
 
