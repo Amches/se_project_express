@@ -3,6 +3,9 @@ const NOT_FOUND = 404;
 const INTERNAL_SERVER_ERROR = 500;
 const CREATED = 201;
 const SUCCESS = 200;
+const CONFLICT = 409;
+const UNAUTHORIZED = 401;
+const FORBIDDEN = 403;
 
 function internalErrorHandler(err, res) {
   console.error(err);
@@ -37,6 +40,9 @@ module.exports = {
   INTERNAL_SERVER_ERROR,
   SUCCESS,
   CREATED,
+  CONFLICT,
+  UNAUTHORIZED,
+  FORBIDDEN,
   internalErrorHandler,
   responseHandler,
   castErrorHandler,

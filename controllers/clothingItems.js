@@ -5,6 +5,7 @@ const {
   castErrorHandler,
   BAD_REQUEST,
   SUCCESS,
+  FORBIDDEN,
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
@@ -36,7 +37,17 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => responseHandler(res, item))
+    .then((item) => {
+      if (!item) {
+        return responseHandler(res, item);
+      }
+      if (!item.owner.equals(req.user._id)) {
+        return res.status(FORBIDDEN).send({
+          message: "Not enough permissions",
+        });
+      }
+      return responseHandler(res, item);
+    })
     .catch((err) => {
       castErrorHandler(err, res);
     });
