@@ -34,19 +34,18 @@ const getItems = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  console.log(itemId);
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
       if (!item) {
         return responseHandler(res, item);
       }
-      if (!item.owner.equals(req.user._id)) {
+      if (item.owner.toString() !== req.user._id) {
         return res.status(FORBIDDEN).send({
           message: "Not enough permissions",
         });
       }
-      return responseHandler(res, item);
+      return item.deleteOne(), then(() => responseHandler(res, item));
     })
     .catch((err) => {
       castErrorHandler(err, res);

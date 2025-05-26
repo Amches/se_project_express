@@ -1,8 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
-const cors = require("cors");
+const { internalErrorHandler } = require("./utils/errors");
 
 const itemsRouter = require("./routes/clothingItems");
 const usersRouter = require("./routes/users");
@@ -34,6 +35,10 @@ app.use(
   },
   itemsRouter
 );
+
+app.use((req, res) => {
+  internalErrorHandler(err, res);
+});
 
 app.listen(PORT, () => {
   console.log(`listening to port ${PORT}`);

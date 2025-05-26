@@ -1,6 +1,7 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const User = require("../models/user");
+
 const {
   BAD_REQUEST,
   CREATED,
@@ -16,9 +17,7 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   bcrypt
     .hash(password, 10)
-    .then((hash) => {
-      return User.create({ name, avatar, email, password: hash });
-    })
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
       const { password: hashedPassword, ...userWithoutPass } = user.toObject();
       res.status(CREATED).send(userWithoutPass);
@@ -86,7 +85,10 @@ const updateUser = (req, res) => {
       res.status(200).send(userWithoutPassword);
     })
     .catch((err) => {
-      castErrorHandler(err, res);
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      return castErrorHandler(err, res);
     });
 };
 
