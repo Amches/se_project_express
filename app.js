@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
-const { internalErrorHandler } = require("./utils/errors");
+const { NOT_FOUND } = require("./utils/errors");
 
 const itemsRouter = require("./routes/clothingItems");
 const usersRouter = require("./routes/users");
@@ -36,9 +36,9 @@ app.use(
   itemsRouter
 );
 
-app.use((req, res) => {
-  internalErrorHandler(err, res);
-});
+app.use((req, res) =>
+  res.status(NOT_FOUND).send({ message: "Item Id not Found " })
+);
 
 app.listen(PORT, () => {
   console.log(`listening to port ${PORT}`);

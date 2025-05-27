@@ -45,7 +45,7 @@ const deleteItem = (req, res) => {
           message: "Not enough permissions",
         });
       }
-      return item.deleteOne(), then(() => responseHandler(res, item));
+      return item.deleteOne().then(() => responseHandler(res, item));
     })
     .catch((err) => {
       castErrorHandler(err, res);
