@@ -5,6 +5,8 @@ const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
 const { NOT_FOUND } = require("./utils/errors");
 
+const errorHandler = require("./middlewares/error-handler");
+
 const itemsRouter = require("./routes/clothingItems");
 const usersRouter = require("./routes/users");
 
@@ -39,6 +41,8 @@ app.use(
 app.use((req, res) =>
   res.status(NOT_FOUND).send({ message: "Item Id not Found " })
 );
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`listening to port ${PORT}`);

@@ -8,30 +8,35 @@ const {
   FORBIDDEN,
 } = require("../utils/errors");
 
+const BadRequestError = require("../errors/bad-request-error");
+const ForbiddenError = require("../errors/forbidden-error");
+const NotFoundError = require("../errors/not-found-error");
+
 const createItem = (req, res) => {
   console.log(req.user._id);
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner })
+  ClothingItem.create({ name, weather, imageUrl, owner }, next)
     .then((item) => res.status(SUCCESS).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: err.message });
+        return next(new BadRequestError("Invalid data format"));
       }
-      return internalErrorHandler(err, res);
+      return next(err);
     });
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(SUCCESS).send(items))
     .catch((err) => {
-      internalErrorHandler(err, res);
+      console.error(err);
+      return next(err);
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findById(itemId)
@@ -41,14 +46,21 @@ const deleteItem = (req, res) => {
         return responseHandler(res, item);
       }
       if (item.owner.toString() !== req.user._id) {
-        return res.status(FORBIDDEN).send({
-          message: "Not enough permissions",
-        });
+        return next(
+          new ForbiddenError("You do not have permission to delete this item.")
+        );
       }
       return item.deleteOne().then(() => responseHandler(res, item));
     })
     .catch((err) => {
-      castErrorHandler(err, res);
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid ID format"));
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item Id not Found"));
+      }
+      return next(err);
     });
 };
 
@@ -65,7 +77,14 @@ const likeItem = (req, res) => {
       responseHandler(res, item);
     })
     .catch((err) => {
-      castErrorHandler(err, res);
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid ID format"));
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item Id not Found"));
+      }
+      return next(err);
     });
 };
 
@@ -80,7 +99,14 @@ const dislikeItem = (req, res) => {
     .orFail()
     .then((item) => responseHandler(res, item))
     .catch((err) => {
-      castErrorHandler(err, res);
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid ID format"));
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item Id not Found"));
+      }
+      return next(err);
     });
 };
 
