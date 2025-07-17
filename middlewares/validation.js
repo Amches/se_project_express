@@ -46,4 +46,3 @@ exports.validateItem = validateItem;
 exports.validateUserProfile = validateUserProfile;
 exports.validateItemId = validateItemId;
 exports.celebrate = celebrate;
-1;
