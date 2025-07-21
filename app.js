@@ -30,7 +30,12 @@ app.get("/crash-test", () => {
   }, 0);
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://www.amcheswtwr.river-haven.com",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
