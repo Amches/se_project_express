@@ -1,10 +1,12 @@
 require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
-const { NOT_FOUND } = require("./utils/errors");
+const NotFoundError = require("./errors/not-found-error");
 
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
@@ -47,12 +49,12 @@ app.use(
   itemsRouter
 );
 
-app.use(errorLogger);
-
-app.use((req, res) =>
-  res.status(NOT_FOUND).send({ message: "Item Id not Found " })
+app.use((req, res, next) =>
+  next(new NotFoundError("Requested resource not found"))
 );
 
+app.use(errorLogger);
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {

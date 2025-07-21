@@ -1,18 +1,12 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  internalErrorHandler,
-  responseHandler,
-  castErrorHandler,
-  BAD_REQUEST,
-  SUCCESS,
-  FORBIDDEN,
-} = require("../utils/errors");
+const { responseHandler, SUCCESS } = require("../utils/errors");
 
 const BadRequestError = require("../errors/bad-request-error");
 const ForbiddenError = require("../errors/forbidden-error");
 const NotFoundError = require("../errors/not-found-error");
+const ServerError = require("../errors/server-error");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   console.log(req.user._id);
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
@@ -23,7 +17,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid data format"));
       }
-      return next(err);
+      return next(new ServerError("An error occurred on the server"));
     });
 };
 
@@ -32,7 +26,7 @@ const getItems = (req, res, next) => {
     .then((items) => res.status(SUCCESS).send(items))
     .catch((err) => {
       console.error(err);
-      return next(err);
+      return next(new ServerError("An error occurred on the server"));
     });
 };
 
@@ -60,11 +54,11 @@ const deleteItem = (req, res, next) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Item Id not Found"));
       }
-      return next(err);
+      return next(new ServerError("An error occurred on the server"));
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findByIdAndUpdate(
@@ -84,11 +78,11 @@ const likeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Item Id not Found"));
       }
-      return next(err);
+      return next(new ServerError("An error occurred on the server"));
     });
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findByIdAndUpdate(
@@ -106,7 +100,7 @@ const dislikeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Item Id not Found"));
       }
-      return next(err);
+      return next(new ServerError("An error occurred on the server"));
     });
 };
 
