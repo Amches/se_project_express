@@ -11,9 +11,10 @@ const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner }, next)
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(SUCCESS).send(item))
     .catch((err) => {
+      console.error(err);
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid data format"));
       }
