@@ -1,5 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
-const { responseHandler, SUCCESS } = require("../utils/errors");
+const { SUCCESS } = require("../utils/errors");
 
 const BadRequestError = require("../errors/bad-request-error");
 const ForbiddenError = require("../errors/forbidden-error");
@@ -38,14 +38,16 @@ const deleteItem = (req, res, next) => {
     .orFail()
     .then((item) => {
       if (!item) {
-        return responseHandler(res, item);
+        return next(new NotFoundError("Item not found."));
       }
       if (item.owner.toString() !== req.user._id) {
         return next(
           new ForbiddenError("You do not have permission to delete this item.")
         );
       }
-      return item.deleteOne().then(() => responseHandler(res, item));
+      return item
+        .deleteOne()
+        .then(() => res.status(SUCCESS).send({ message: "Item deleted" }));
     })
     .catch((err) => {
       console.error(err);
@@ -69,7 +71,7 @@ const likeItem = (req, res, next) => {
   )
     .orFail()
     .then((item) => {
-      responseHandler(res, item);
+      res.status(SUCCESS).send(item);
     })
     .catch((err) => {
       console.error(err);
@@ -92,7 +94,7 @@ const dislikeItem = (req, res, next) => {
     { new: true }
   )
     .orFail()
-    .then((item) => responseHandler(res, item))
+    .then((item) => res.status(SUCCESS).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {

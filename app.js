@@ -43,16 +43,7 @@ app.post("/signin", login);
 app.post("/signup", createUser);
 
 app.use("/users", usersRouter);
-app.use(
-  "/items",
-  (req, res, next) => {
-    if (req.method === "GET") {
-      return next();
-    }
-    return auth(req, res, next);
-  },
-  itemsRouter
-);
+app.use("/items", itemsRouter);
 
 app.use((req, res, next) =>
   next(new NotFoundError("Requested resource not found"))
